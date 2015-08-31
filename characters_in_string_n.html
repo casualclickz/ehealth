@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Characters In Strings N</title>
+		<meta charset = "UTF-8" />
+	</head>
+	<body>
+
+		<script type="text/javascript">
+
+			// find_chars version N
+			function find_chars() {
+
+				if(arguments && arguments.length > 0) {
+				
+					if(arguments.length === 1) return arguments[0];
+
+					var string1 = arguments[0];
+					for(var i = 1; i < arguments.length; i++) {
+
+						var stringN = arguments[i], a = stringN.split(""), missing=[];
+						for(var x in a) {
+
+							if(string1.indexOf(a[x]) === -1) missing.push(a[x]);
+						}
+						string1 += missing.join("");
+					}
+					return string1;
+				}
+				return "";
+			}
+			alert(find_chars("abc","cd", "de"));
+		</script>
+	</body>
+</html>

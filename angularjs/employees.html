@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" data-ng-app="employeeApp">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Employees</title>
+		
+		<style type="text/css">
+			html {font-size:62.5%;}
+			body {
+				font-family: Arial, Sans-Serif;
+				font-size:1.5rem;
+				margin:0;
+			}
+			
+			h1,h2,h3,h4,h5 {
+				margin:0;
+			}
+			
+			h1 {
+				text-align:center;
+				border-bottom:2px solid #555;
+				background:#eee;
+				padding:15px 0;
+			}
+			h3 {
+			
+				padding:10px 0;
+			}
+			
+			div.employee form,
+			div.employees .table {
+			
+				width:70%;
+				margin:0 auto;
+				background:#fff;
+			}
+			div.employee form div {
+				margin-top:15px;
+			}
+			div.employee form div label,
+			div.employee form div input {
+			
+				width:100%;
+				display:block;
+			}
+			div.employee form div input {
+				padding:10px 15px;
+			}			
+			div.employee form div input[type=button] {
+				width:auto;
+			}
+			
+			div.employees {
+				margin-top:20px;
+			}
+			
+			[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+			  display: none !important;
+			}
+			
+			table {
+
+				border-collapse:collapse;
+				width:100%;
+			}
+
+			table tr {
+
+				border-bottom: 1px solid #aaa;
+			}
+
+			table th {
+
+				text-align: left;
+			}
+
+			table th,
+			table td {
+
+				padding: 10px 15px;
+			}
+
+			table tr:nth-child(odd) {
+
+				background: #ddd;
+			}
+
+			table tr:nth-child(even) {
+
+				background: #bbb;
+			}
+
+			table tr:hover td {
+
+				background:#fff;
+				color: #222;
+			}
+
+			table thead tr:nth-child(1) {
+
+				background: #333;
+				color: #fff;
+			}
+		</style>
+   </head>
+   <body ng-controller="EmployeeCtrl">
+
+      <div class="header">
+			<h1>Employees</h1>
+		</div>
+		
+		<div class="employee" data-ng-cloak>
+			<form autocomplete="off" novalidate>
+			
+				<div><h3>Enter Employee Details Here</h3></div>
+				<div>
+					<label for="empname">Name</label>
+					<input type="text" id="empname" maxlength="20" />
+				</div>
+				<div>
+					<label for="department">Department</label>
+					<input type="text" id="department" maxlength="20" />
+				</div>
+				<div>
+					<label for="age">Age</label>
+					<input type="number" id="age" maxlength="2"/>
+				</div>
+				<div>
+					<label for="joined">Joined (MM/DD/YYYY)</label>
+					<input type="date" id="joined" pattern="MM/DD/YYYY" maxlength="10"/>
+				</div>
+				<div>
+					<input type="button" value="Save" ng-click="addEmployee()" />
+				</div>
+			</form>
+		</div>
+		
+		<div class="employees" data-ng-controller="EmployeeCtrl" ng-switch on="employeeCount > 0">
+		
+			<div class="table" ng-switch-when="true">
+			
+				<div><h3>List Of Employees</h3></div>
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Department</th>
+							<th>Age</th>
+							<th>Joined</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr data-ng-repeat="emp in employees">
+							<td>{{emp.empname}}</td>
+							<td>{{emp.department}}</td>
+							<td>{{emp.age}}</td>
+							<td>{{emp.joined}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<br/>
+		
+		<script src="angular.min.js"></script>
+		<script src="pouchdb.js"></script>
+		<script type="text/javascript">
+
+			// employeeApp depends on employeeApp.controllers and employeeApp.services
+			angular.module('employeeApp', ['employeeApp.controllers', 'employeeApp.services']);
+			
+			// controller
+			var ctrl = angular.module('employeeApp.controllers', []);
+			ctrl.controller('EmployeeCtrl', ['$scope', '$q', 'employeeFactory', function($scope, $q, employeeFactory) {
+
+				$scope.score = {};
+
+				$q.all(employeeFactory.getEmployees()).then(function(res) {
+
+					$scope.employees = res;
+					$scope.employeeCount = res.length;
+				});
+
+				$scope.addEmployee = function() {
+
+					employeeFactory.addEmployee(empname.value, department.value, age.value, joined.value).then(function(res) {
+					
+						return employeeFactory.getEmployees();
+					}).then(function(emps) {
+					
+						$scope.employees = emps;
+						$scope.employeeCount = emps.length;
+					});
+				}
+			}]);
+			
+			// Register services
+			var services = angular.module('employeeApp.services', []);
+  
+			services.value('version', '0.1');
+			services.factory('pouchdb', function() {
+			
+				Pouch.enableAllDbs = true;
+				return new Pouch('empdbone');
+			});
+			services.factory('employeeFactory', function($q, pouchdb, $rootScope) {
+
+				return {
+				
+					addEmployee: function(empname,department,age,joined) {
+					
+						var deferred = $q.defer();
+						var doc = {
+						
+							empname: empname,
+							department: department,
+							age:age,
+							joined:joined
+						};
+						
+						pouchdb.post(doc, function(err, res) {
+						
+							$rootScope.$apply(function() {
+							
+								if (err) {
+								
+									deferred.reject(err);
+								} else {
+								
+									deferred.resolve(res);
+								}
+							});
+						});
+						return deferred.promise;
+					},
+					getEmployees: function() {
+					
+						var deferred = $q.defer();
+						var map = function(doc) {
+						
+							emit(doc._id, doc);
+						};
+						pouchdb.query({map: map}, function(err, res) {
+						
+							$rootScope.$apply(function() {
+							
+								if (err) {
+								
+									deferred.reject(err);
+								} else {
+								
+									var v = [];
+									for(var i = 0; i < res.rows.length; i++){
+									
+										v.push(res.rows[i].value);
+									}
+									deferred.resolve(v);
+								}
+							});
+						});
+						return deferred.promise;
+					}
+				}
+			});
+		</script>
+   </body>
+</html>

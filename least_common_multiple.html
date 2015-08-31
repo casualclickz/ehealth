@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Least Common Multiple</title>
+		<meta charset = "UTF-8" />
+	</head>
+	<body>
+	
+		<script type="text/javascript">
+
+			function find_lcm(a) {
+			
+				a = a && a.constructor === Array ? a : [0];
+				a.sort(sort_high_low);
+				
+				var max = a[0], divisors = [];
+				for(var i = 2; i <= max; i++) {
+				
+					while(slash(a,i)) {
+					
+						divisors.push(i);
+					
+						a.sort(sort_high_low);
+						max = a[0];
+					}
+				}
+				return divisors.reduce(function(m, n) {
+				
+					return m * n;
+				});
+			}
+			alert(find_lcm([3,5,7,9]));
+			
+			function slash(a, i) {
+			
+				var worked = false;
+				for(var j = 0; j < a.length; j++) {
+					
+					if(a[j] % i === 0) {
+					
+						a[j] = a[j] / i;
+						worked = true;
+					}
+				}
+				return worked;
+			}
+			
+			function sort_high_low(a, b) { 
+
+				return b - a; 
+			}
+		</script>	
+	</body>
+</html>

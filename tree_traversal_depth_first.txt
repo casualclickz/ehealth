@@ -1,0 +1,13 @@
+Tree Traversal Depth First:
+
+This is a technique used to traverse non-linear iterations.
+
+Starting with the parent object as the current item, loop
+through the children elements determining the number of 
+children, the current depth, and the value held by each 
+child.
+
+For each child in the loop, recursively call the function
+that is analysing the parent object and passing the each
+child element as the new current object.
+

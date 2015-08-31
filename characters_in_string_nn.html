@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Characters In Strings N*N</title>
+		<meta charset = "UTF-8" />
+	</head>
+	<body>
+
+		<script type="text/javascript">
+
+			// find_chars version N by N
+			function find_chars(string1, string2) {
+
+				string1 = string1 && string1.constructor === String ? string1 : "";
+				string2 = string2 && string2.constructor === String ? string2 : "";
+
+				var a = string2.split(""), missing=[];
+				for(var i in a) {
+
+					if(string1.indexOf(a[i]) === -1) missing.push(a[i]);
+				}
+				return string1 + missing.join("");
+			}
+			alert(find_chars("abc","cd"));
+		</script>
+	</body>
+</html>
